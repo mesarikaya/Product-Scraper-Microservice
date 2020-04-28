@@ -19,7 +19,7 @@ class CoopProductView(APIView):
     def post(self, request, format=None):
         logging.debug("Request body has the following resources: ", request.data, request.data['is_allowed'])
         if request.data['is_allowed']:
-            with open('resources/resources/coop_product_ids.json', errors='ignore') as data_file:
+            with open('resources/data/coop_product_ids.json', errors='ignore') as data_file:
                 data = data_file.read()
                 data = "[" + data + "]"
                 data = data.replace("}{", "}, {")
@@ -32,10 +32,14 @@ class CoopProductView(APIView):
 
                 data_to_serialize = list()
                 for product, category in product_values.items():
+                    product_url = product
                     product_id = CoopProductView.retrieve_product_id(product)
                     data_to_serialize.append({'product_id': product_id,
+                                              'product_url': product_url,
                                               'category': category})
-                    print("Product item values: product:", product_id, "and category:", category)
+                    print("Product item values: product:", product_id,
+                          "and category:", category,
+                          "and url:", product_url)
 
                 serializer = CoopProductSerializer(data=data_to_serialize, many=True)
                 if serializer.is_valid():

@@ -17,7 +17,7 @@ class AHProductView(APIView):
     def post(self, request, format=None):
         logging.debug("Request body has the following resources: ", request.data, request.data['is_allowed'])
         if request.data['is_allowed']:
-            with open('resources/resources/product_ids.json', errors='ignore') as data_file:
+            with open('resources/data/product_ids.json', errors='ignore') as data_file:
                 data = data_file.read()
                 data = "[" + data + "]"
                 data = data.replace(",]", "]")

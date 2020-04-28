@@ -17,7 +17,7 @@ class JumboProductView(APIView):
     def post(self, request, format=None):
         logging.debug("Request body has the following resources: ", request.data, request.data['is_allowed'])
         if request.data['is_allowed']:
-            with open('resources/resources/jumbo_product_ids.json', errors='ignore') as data_file:
+            with open('resources/data/jumbo_product_ids.json', errors='ignore') as data_file:
                 data = data_file.read()
                 data = "[" + data + "]"
                 data = data.replace("}{", "}, {")

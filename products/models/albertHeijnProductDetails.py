@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from products.models import BaseProductDetails
+from .baseProductDetails import BaseProductDetails
 
 
 class AlbertHeijnProductDetails(BaseProductDetails):

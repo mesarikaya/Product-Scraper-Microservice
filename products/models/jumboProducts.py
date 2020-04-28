@@ -1,6 +1,5 @@
 from django.db import models
-from django.utils import timezone
-from products.models import BaseProduct
+from .baseProducts import BaseProduct
 
 
 class JumboProduct(BaseProduct):

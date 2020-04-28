@@ -1,5 +1,3 @@
-from .proxyList import ProxyList
-
 from .baseProducts import BaseProduct
 from .albertheijnProducts import AlbertHeijnProduct
 from .jumboProducts import JumboProduct
