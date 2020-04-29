@@ -11,12 +11,7 @@ def load_properties():
     config = configparser.ConfigParser()
     properties = defaultdict()
     properties = Properties()
-    print("Properties file directory:", BASE_DIR + "\\webcrawler\\application_dev.properties")
-    with open(BASE_DIR + "\\webcrawler\\application_dev.properties", "rb") as f:
+    with open(BASE_DIR + "\\webcrawler\\resources\\application_dev.properties", "rb") as f:
         properties.load(f, "utf-8")
 
-    print([i for i in properties.properties.keys() if str(i).startswith("Scraper_AH_scrape_url")])
     return properties
-
-
-load_properties()

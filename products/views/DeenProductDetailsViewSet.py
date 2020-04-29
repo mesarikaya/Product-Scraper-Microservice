@@ -12,16 +12,16 @@ from django.db.models import QuerySet
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from products.models import JumboProductDetails
-from products.serializers import JumboProductDetailsSerializer
-from products.models import JumboProduct
+from products.models import DeenProductDetails
+from products.serializers import DeenProductDetailsSerializer
+from products.models import DeenProduct
 from products.views.helpers import create_batch_product_details_task
 from products.views.helpers import apply_regex
 from products.views import AbstractProductDetailsViewSet
 
 
-class JumboProductDetailsViewSet(AbstractProductDetailsViewSet):
-    """Enable CRUD operations for Jumbo Products Details Table from retrieved API call JSON resources"""
+class DeenProductDetailsViewSet(AbstractProductDetailsViewSet):
+    """Enable CRUD operations for Deen Products Details Table from retrieved API call JSON resources"""
 
     def __init__(self):
         super()
@@ -30,7 +30,7 @@ class JumboProductDetailsViewSet(AbstractProductDetailsViewSet):
         """Get all details of all products"""
         """TODO: Create a specific view for admin and other users."""
         """TODO: Create a specific product item search."""
-        JumboProductDetails.objects.all()
+        DeenProductDetails.objects.all()
 
     def post(self, request, format=None):
         """TODO: Create an env variable for this url"""
@@ -38,12 +38,12 @@ class JumboProductDetailsViewSet(AbstractProductDetailsViewSet):
         is_allowed = request.data['is_allowed']
         if is_allowed and batch_size >= 0 and batch_size:
             try:
-                create_batch_product_details_task(product_class=JumboProduct,
+                create_batch_product_details_task(product_class=DeenProduct,
                                                   column_name='product_id',
-                                                  view_json=jsonpickle.encode(JumboProductDetailsViewSet),
-                                                  serializer_json=jsonpickle.encode(JumboProductDetailsSerializer),
-                                                  task_name='get_Jumbo_product_details',
-                                                  batch_size=10, min_time_delay=3, max_time_delay=7)
+                                                  view_json=jsonpickle.encode(DeenProductDetailsViewSet),
+                                                  serializer_json=jsonpickle.encode(DeenProductDetailsSerializer),
+                                                  task_name='get_Deen_product_details',
+                                                  batch_size=10, min_time_delay=1, max_time_delay=5)
                 return Response("Success", status=status.HTTP_201_CREATED)
             except Exception as e:
                 print("Unexpected Exception: ", Exception(e))
@@ -54,14 +54,13 @@ class JumboProductDetailsViewSet(AbstractProductDetailsViewSet):
     @staticmethod
     def get_json_data(product_id):
         """TODO: Create an env variable for this url"""
-        base_url = 'https://www.jumbo.com'
+        base_url = 'https://www.deen.nl/'
         headers = {'User-agent': 'PostmanRuntime/7.24.0'}
         print("Searching product id:", product_id)
         try:
             r = requests.get(url=base_url + product_id, headers=headers)
             text = r.content.decode("utf-8")
-            result = JumboProductDetailsViewSet.map_product_details(text)
-            return result
+            result = DeenProductDetailsViewSet.map_product_details(text)
         except Exception as e:
             raise Exception(e)
         else:
@@ -70,35 +69,25 @@ class JumboProductDetailsViewSet(AbstractProductDetailsViewSet):
     @staticmethod
     def map_product_details(text):
         try:
-            try:
-                general_price_info = apply_regex(text, 'jum-comparative-price">((.*?))</span>', 24, 8).replace("&#47;",
-                                                                                                               ";")
-                # print("General_price_info:", general_price_info)
-                price_unit_info = Decimal(general_price_info.split(";")[0].replace(',', '.'))
-                price_unit_info_unit_size = general_price_info.split(";")[1]
-            except Exception as e:
-                # print("Error in getting general price info: ", e)
-                price_unit_info = None
-                price_unit_info_unit_size = ""
-
             data = {
-                "description": apply_regex(text, '<h3>Productomschrijving</h3>(.*?)</div>', 28, 6)[:100],
-                "price_now_unit_size": apply_regex(text, 'jum-pack-size">(.*?)</span>', 15, 7),
-                "price_unit_info": price_unit_info,
-                "price_unit_info_unit_size": price_unit_info_unit_size,
-                "image_url": apply_regex(text, 'resources-jum-hr-src="(.*?)"', 17, 1).replace("&#47;", "/"),
-                "summary": apply_regex(text, '<div class="jum-summary-description">\n<p>(.*?)</p>', 41, 4),
+                "name": apply_regex(text, '<h1 itemprop="name">(.*?)</h1>', 20, 5)[:200],
+                "product_id": apply_regex(text, '<meta itemprop="sku" content="(.*?)"', 30, 1),
+                "description": apply_regex(text, 'itemprop="description">(.*?)</div>', 23, 6)[:100],
+                "price_now": apply_regex(text, '<span class="c-price">(.*?)</span>', 22, 7),
+                "price_now_unit_size": apply_regex(text, '<h3>Gewicht</h3>(.*?)\n<h3>', 16, 5),
+                "price_unit_info": None,
+                "price_unit_info_unit_size": "",
+                "image_url": apply_regex(text, '<meta itemprop="image"\ncontent="(.*?)"', 32, 1).replace("&#47;", "/"),
+                "summary": "",
+                "catalog_id": None,
+                "brand": apply_regex(text, 'itemprop="brand" content="(.*?)"', 26, 1),
+                "category": apply_regex(text, '<span itemprop="name">(.*?)</span>\n</a>\n<meta content="3"', 22, 30),
+                "is_available": True,
                 "hq_id": None,
                 "properties": "",
                 "is_medicine": None
             }
-            product_details = clean_product_details(apply_regex(text, 'resources-jum-product-details="(.*?)"', 26, 1))
-            print("Product details: ", product_details)
-            data.setdefault('title', product_details.get('name', ""))
-            data.setdefault('price_now', product_details.get('price', None))
-            data.setdefault('brand', product_details.get('brand', ""))
-            data.setdefault('category', product_details.get('category', ""))
-            data.setdefault('product_id', product_details.get('id', "-1"))
+
             # print("Data is: ", resources)
         except KeyError as e:
             logging.debug("Key Error:", e, text)

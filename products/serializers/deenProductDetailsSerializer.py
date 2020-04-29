@@ -1,20 +1,20 @@
 from rest_framework import serializers
-from products.models import JumboProductDetails
+from products.models import DeenProductDetails
 from products.serializers import BaseProductDetailsSerializer
 
 
-class JumboProductDetailsSerializer(BaseProductDetailsSerializer):
-    product_id = serializers.CharField(max_length=100, required=True)
+class DeenProductDetailsSerializer(BaseProductDetailsSerializer):
+    product_id = serializers.IntegerField(required=True)
 
     def create(self, validated_data):
         """
-        Create and return a new `JumboProductDetails` instance, given the validated resources.
+        Create and return a new `DeenProductDetails` instance, given the validated resources.
         """
-        return JumboProductDetails.objects.create(**validated_data)
+        return DeenProductDetails.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         """
-        Update and return an existing `JumboProductDetails` instance, given the validated resources.
+        Update and return an existing `DeenProductDetails` instance, given the validated resources.
         """
         instance.product_id = validated_data.get('product_id', instance.product_id)
         instance.title = validated_data.get('title', instance.title)

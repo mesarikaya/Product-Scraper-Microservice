@@ -11,3 +11,6 @@ from .JumboProductDetailsViewSet import JumboProductDetailsViewSet
 
 from .CoopScrapedDataViewSet import CoopProductView
 from .CoopProductDetailsViewSet import CoopProductDetailsViewSet
+
+from .DeenScrapedDataViewSet import DeenProductView
+from .DeenProductDetailsViewSet import DeenProductDetailsViewSet

@@ -2,18 +2,18 @@ import unittest
 
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.test import APIClient, APITestCase
-from products.models import AlbertHeijnProduct
+from rest_framework.test import APIClient, APITestCase, URLPatternsTestCase
+from products.models import DeenProduct
 
 
-class AHScrapedDataLoadTests(APITestCase):
+class DeenScrapedDataLoadTests(APITestCase):
 
     def setUp(self):
         self.client = APIClient()
-        print("Initially, all items in the database: ", AlbertHeijnProduct.objects.all())
+        print("Initially, all items in the database: ", DeenProduct.objects.all())
 
     def test_data_load(self):
-        response = self.client.post('/products/api/v1/save/ah/json', data={'is_allowed': True}, format='json')
+        response = self.client.post('/products/api/v1/save/deen/json', data={'is_allowed': True}, format='json')
 
         self.assertIsInstance(response, Response)
         self.assertTrue(response.status_code, status.HTTP_201_CREATED)

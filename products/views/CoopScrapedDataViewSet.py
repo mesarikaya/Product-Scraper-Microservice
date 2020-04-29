@@ -6,12 +6,11 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from products.models import CoopProduct
-
 from products.serializers import CoopProductSerializer
 
 
 class CoopProductView(APIView):
-    """Enable CRUD operations for Jumbo Products Table from scraped JSON resources"""
+    """Enable CRUD operations for Coop Products Table from scraped JSON resources"""
 
     def get(self):
         CoopProduct.objects.all()
