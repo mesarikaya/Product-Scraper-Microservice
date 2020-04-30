@@ -68,27 +68,31 @@ class DeenProductDetailsViewSet(AbstractProductDetailsViewSet):
 
     @staticmethod
     def map_product_details(text):
+        text = ' '.join(text.split())
+        try:
+            category = apply_regex(text, 'href="/boodschappen/(.*?)"', 20, 1).split("/")[-1][:200]
+        except Exception as e:
+            category = ""
+
         try:
             data = {
-                "name": apply_regex(text, '<h1 itemprop="name">(.*?)</h1>', 20, 5)[:200],
+                "title": apply_regex(text, '<h1 itemprop="name">(.*?)</h1>', 20, 5).replace("&#39;", "é")[:200],
                 "product_id": apply_regex(text, '<meta itemprop="sku" content="(.*?)"', 30, 1),
-                "description": apply_regex(text, 'itemprop="description">(.*?)</div>', 23, 6)[:100],
-                "price_now": apply_regex(text, '<span class="c-price">(.*?)</span>', 22, 7),
-                "price_now_unit_size": apply_regex(text, '<h3>Gewicht</h3>(.*?)\n<h3>', 16, 5),
+                "description": apply_regex(text, 'description">(.*?)<', 14, 2),
+                "price_now": apply_regex(text, 'price: (.*?),', 8, 2).replace(",", "."),
+                "price_now_unit_size": apply_regex(text, 'Gewicht</h3>(.*?)<', 12, 1).strip(),
                 "price_unit_info": None,
                 "price_unit_info_unit_size": "",
-                "image_url": apply_regex(text, '<meta itemprop="image"\ncontent="(.*?)"', 32, 1).replace("&#47;", "/"),
+                "image_url": apply_regex(text, 'photo: (.*?),', 8, 2).replace("&#47;", "/"),
                 "summary": "",
                 "catalog_id": None,
-                "brand": apply_regex(text, 'itemprop="brand" content="(.*?)"', 26, 1),
-                "category": apply_regex(text, '<span itemprop="name">(.*?)</span>\n</a>\n<meta content="3"', 22, 30),
+                "brand": apply_regex(text, 'itemprop="brand" content="(.*?)"', 26, 1).replace("&#39;","'").replace("&#39;", "é"),
+                "category": category,
                 "is_available": True,
                 "hq_id": None,
                 "properties": "",
                 "is_medicine": None
             }
-
-            # print("Data is: ", resources)
         except KeyError as e:
             logging.debug("Key Error:", e, text)
             raise KeyError(e)

@@ -5,11 +5,12 @@ from .albertHeijnProductSerializer import AlbertHeijnProductSerializer
 from .jumboProductSerializer import JumboProductSerializer
 from .coopProductSerializer import CoopProductSerializer
 from .deenProductSerializer import DeenProductSerializer
+from .dirkProductSerializer import DirkProductSerializer
 
 from .baseProductDetailsSerializer import BaseProductDetailsSerializer
 from .albertHeijnProductDetailsSerializer import AlbertHeijnProductDetailsSerializer
 from .jumboProductDetailsSerializer import JumboProductDetailsSerializer
 from .coopProductDetailsSerializer import CoopProductDetailsSerializer
 from .deenProductDetailsSerializer import DeenProductDetailsSerializer
-
+from .dirkProductDetailsSerializer import DirkProductDetailsSerializer
 

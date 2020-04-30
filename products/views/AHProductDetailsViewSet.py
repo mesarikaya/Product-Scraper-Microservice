@@ -56,12 +56,10 @@ class AHProductDetailsViewSet(AbstractProductDetailsViewSet):
             product_id = product_id
             PARAMS = {'webshopId': product_id}
             r = requests.get(url=URL, params=PARAMS)
-            print("Response: ", r)
             data = r.json()
-            print("Json version of data: ", data)
             result = AHProductDetailsViewSet.map_product_details(data)
         except Exception as e:
-            print("Json sarialization exception:", Exception(e))
+            logging.info("Json serialization exception:", Exception(e))
             raise Exception(e)
         else:
             return result

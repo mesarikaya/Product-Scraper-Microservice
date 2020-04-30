@@ -12,6 +12,6 @@ def load_properties():
     properties = defaultdict()
     properties = Properties()
     with open(BASE_DIR + "\\webcrawler\\resources\\application_dev.properties", "rb") as f:
-        properties.load(f, "utf-8")
+        properties.load(f, "iso-8859-1")
 
     return properties

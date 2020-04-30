@@ -14,3 +14,6 @@ from .CoopProductDetailsViewSet import CoopProductDetailsViewSet
 
 from .DeenScrapedDataViewSet import DeenProductView
 from .DeenProductDetailsViewSet import DeenProductDetailsViewSet
+
+from .DirkScrapedDataViewSet import DirkProductView
+from .DirkProductDetailsViewSet import DirkProductDetailsViewSet
