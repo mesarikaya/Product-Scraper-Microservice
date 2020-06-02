@@ -37,9 +37,6 @@ class DirkProductView(APIView):
                     data_to_serialize.append({'product_id': product_id,
                                               'product_url': product_url,
                                               'category': category})
-                    print("Product item values: product:", product_id,
-                          "and category:", category,
-                          "and url:", product_url)
 
                 serializer = DirkProductSerializer(data=data_to_serialize, many=True)
                 if serializer.is_valid():
@@ -48,10 +45,9 @@ class DirkProductView(APIView):
                         instance = serializer.save()
                     except Exception as e:
                         logging.debug("Error in serialize.save() for batch product id load.")
-                        raise IOError from e
 
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
-                print("Serializer is invalid with errors:", serializer.errors)
+                logging.debug("Serializer is invalid with errors:", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("Permission denied", status=status.HTTP_403_FORBIDDEN)
@@ -60,11 +56,10 @@ class DirkProductView(APIView):
     def retrieve_product_id(json_value):
         try:
             string_parts = json_value.split('/')
-            print(string_parts)
         except IndexError as e:
-            print("Index Error: ", e)
+            logging.debug("Index Error: ", e)
         except Exception as e:
-            print("Exception: ", e)
+            logging.debug("Exception: ", e)
         else:
             return getID(string_parts)
 

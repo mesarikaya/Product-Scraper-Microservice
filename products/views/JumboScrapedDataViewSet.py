@@ -39,10 +39,9 @@ class JumboProductView(APIView):
                         instance = serializer.save()
                     except Exception as e:
                         logging.debug("Error in serialize.save() for batch product id load.")
-                        raise IOError from e
 
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
-                print("Serializer is invalid with errors:", serializer.errors)
+                logging.info("Serializer is invalid with errors:", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("Permission denied", status=status.HTTP_403_FORBIDDEN)

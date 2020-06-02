@@ -43,7 +43,7 @@ class AHProductDetailsViewSet(AbstractProductDetailsViewSet):
                                                   batch_size=10, min_time_delay=1, max_time_delay=5)
                 return Response("Success", status=status.HTTP_201_CREATED)
             except Exception as e:
-                print("Unexpected exception:", Exception(e))
+                logging.debug("Unexpected exception:", Exception(e))
                 return Response("Error in execution", status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("Permission denied", status=status.HTTP_400_BAD_REQUEST)
@@ -59,8 +59,7 @@ class AHProductDetailsViewSet(AbstractProductDetailsViewSet):
             data = r.json()
             result = AHProductDetailsViewSet.map_product_details(data)
         except Exception as e:
-            logging.info("Json serialization exception:", Exception(e))
-            raise Exception(e)
+            logging.debug("Json serialization exception:", Exception(e))
         else:
             return result
 
@@ -105,13 +104,9 @@ class AHProductDetailsViewSet(AbstractProductDetailsViewSet):
                             .get('unitInfo', {}).get('description', ""))
         except KeyError as e:
             logging.debug("Key Error:", e, json_value)
-            raise KeyError(e)
         except IndexError as e:
             logging.debug("Index Error: ", e)
-            print("Index error: ", json_value)
-            raise IndexError(e, json_value)
         except Exception as e:
             logging.debug("Exception: ", e, json_value)
-            raise Exception(e)
         else:
             return data

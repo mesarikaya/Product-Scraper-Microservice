@@ -11,7 +11,6 @@ def create_batch_product_details_task(product_class,
                                       serializer_json,
                                       task_name, batch_size=10,
                                       min_time_delay=1, max_time_delay=5):
-
     product_id_list = list(set(list(product_class.objects.values_list(column_name, flat=True))))
     batchStart = 0
     batchEnd = 0

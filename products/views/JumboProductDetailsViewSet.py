@@ -46,7 +46,7 @@ class JumboProductDetailsViewSet(AbstractProductDetailsViewSet):
                                                   batch_size=10, min_time_delay=3, max_time_delay=7)
                 return Response("Success", status=status.HTTP_201_CREATED)
             except Exception as e:
-                print("Unexpected Exception: ", Exception(e))
+                logging.debug("Unexpected Exception: ", Exception(e))
                 return Response("Error in execution", status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("Permission denied", status=status.HTTP_400_BAD_REQUEST)
@@ -56,28 +56,25 @@ class JumboProductDetailsViewSet(AbstractProductDetailsViewSet):
         """TODO: Create an env variable for this url"""
         base_url = 'https://www.jumbo.com'
         headers = {'User-agent': 'PostmanRuntime/7.24.0'}
-        print("Searching product id:", product_id)
         try:
             r = requests.get(url=base_url + product_id, headers=headers)
             text = r.content.decode("utf-8")
             result = JumboProductDetailsViewSet.map_product_details(text)
-            return result
         except Exception as e:
-            raise Exception(e)
+            logging.info("Get json data error:", Exception(e))
         else:
             return result
 
     @staticmethod
     def map_product_details(text):
+        text = ' '.join(text.split())
         try:
             try:
                 general_price_info = apply_regex(text, 'jum-comparative-price">((.*?))</span>', 24, 8).replace("&#47;",
                                                                                                                ";")
-                # print("General_price_info:", general_price_info)
                 price_unit_info = Decimal(general_price_info.split(";")[0].replace(',', '.'))
                 price_unit_info_unit_size = general_price_info.split(";")[1]
             except Exception as e:
-                # print("Error in getting general price info: ", e)
                 price_unit_info = None
                 price_unit_info_unit_size = ""
 
@@ -87,29 +84,23 @@ class JumboProductDetailsViewSet(AbstractProductDetailsViewSet):
                 "price_unit_info": price_unit_info,
                 "price_unit_info_unit_size": price_unit_info_unit_size,
                 "image_url": apply_regex(text, 'resources-jum-hr-src="(.*?)"', 17, 1).replace("&#47;", "/"),
-                "summary": apply_regex(text, '<div class="jum-summary-description">\n<p>(.*?)</p>', 41, 4),
+                "summary": apply_regex(text, '<div class="jum-summary-description"> <p>(.*?)</p>', 41, 4),
                 "hq_id": None,
                 "properties": "",
                 "is_medicine": None
             }
-            product_details = clean_product_details(apply_regex(text, 'resources-jum-product-details="(.*?)"', 26, 1))
-            print("Product details: ", product_details)
+            product_details = clean_product_details(apply_regex(text, 'data-jum-product-details="(.*?)"', 26, 1))
             data.setdefault('title', product_details.get('name', ""))
             data.setdefault('price_now', product_details.get('price', None))
             data.setdefault('brand', product_details.get('brand', ""))
             data.setdefault('category', product_details.get('category', ""))
             data.setdefault('product_id', product_details.get('id', "-1"))
-            # print("Data is: ", resources)
         except KeyError as e:
             logging.debug("Key Error:", e, text)
-            raise KeyError(e)
         except IndexError as e:
             logging.debug("Index Error: ", e)
-            print("Index error: ", text)
-            raise IndexError(e, text)
         except Exception as e:
             logging.debug("Exception: ", e, text)
-            raise Exception(e)
         else:
             return data
 
@@ -121,7 +112,7 @@ def clean_product_details(text):
                             .replace("\\", "")
                             .replace("&#47;", "-"))
     except Exception as e:
-        print("Exception during json load:", e)
+        logging.info("Exception during json load:", e)
         return {'name': '', 'id': '-1', 'price': None, 'brand': '', 'category': ''}
     else:
         return result

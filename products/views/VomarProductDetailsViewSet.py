@@ -6,16 +6,16 @@ import requests
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from products.serializers import DirkProductDetailsSerializer
-from products.models import DirkProduct
-from products.models import DirkProductDetails
+from products.serializers import VomarProductDetailsSerializer
+from products.models import VomarProduct
+from products.models import VomarProductDetails
 from products.views.helpers import create_batch_product_details_task
 from products.views.helpers import apply_regex
 from products.views import AbstractProductDetailsViewSet
 
 
-class DirkProductDetailsViewSet(AbstractProductDetailsViewSet):
-    """Enable CRUD operations for Dirk Products Details Table from retrieved API call JSON resources"""
+class VomarProductDetailsViewSet(AbstractProductDetailsViewSet):
+    """Enable CRUD operations for Vomar Products Details Table from retrieved API call JSON resources"""
 
     def __init__(self):
         super()
@@ -24,18 +24,21 @@ class DirkProductDetailsViewSet(AbstractProductDetailsViewSet):
         """Get all details of all products"""
         """TODO: Create a specific view for admin and other users."""
         """TODO: Create a specific product item search."""
-        DirkProductDetails.objects.all()
+        VomarProductDetails.objects.all()
 
     def post(self, request, format=None):
         batch_size = request.data['batch_size']
         is_allowed = request.data['is_allowed']
+
+        print("Inside the post function")
         if is_allowed and batch_size >= 0 and batch_size:
             try:
-                create_batch_product_details_task(product_class=DirkProduct,
-                                                  column_name='product_url',
-                                                  view_json=jsonpickle.encode(DirkProductDetailsViewSet),
-                                                  serializer_json=jsonpickle.encode(DirkProductDetailsSerializer),
-                                                  task_name='get_Dirk_product_details',
+                print("Inside the post function")
+                create_batch_product_details_task(product_class=VomarProduct,
+                                                  column_name='product_id',
+                                                  view_json=jsonpickle.encode(VomarProductDetailsViewSet),
+                                                  serializer_json=jsonpickle.encode(VomarProductDetailsSerializer),
+                                                  task_name='get_Vomar_product_details',
                                                   batch_size=10, min_time_delay=3, max_time_delay=7)
                 return Response("Success", status=status.HTTP_201_CREATED)
             except Exception as e:
@@ -50,7 +53,7 @@ class DirkProductDetailsViewSet(AbstractProductDetailsViewSet):
         try:
             r = requests.get(url=product_url, headers=headers)
             text = r.content.decode("utf-8")
-            result = DirkProductDetailsViewSet.map_product_details(text, product_url)
+            result = VomarProductDetailsViewSet.map_product_details(text, product_url)
         except Exception as e:
             logging.info("Get json data error:", Exception(e))
         else:
@@ -58,30 +61,32 @@ class DirkProductDetailsViewSet(AbstractProductDetailsViewSet):
 
     @staticmethod
     def map_product_details(text, product_url):
-        """Map the external api json to a dictionary map that is in line with AH Product Details model"""
+        """Map the external api json to a dictionary map that is in line with Vomar Product Details model"""
+        text = ' '.join(text.split())
         try:
-            price_part_1 = apply_regex(text, '"product-card__price__euros"(.*?)</span>', 45, 7).replace(".", "")
-            price_part_2 = apply_regex(text, '"product-card__price__cents"(.*?)</span>', 45, 7).replace("", "")
+            price_part_1 = apply_regex(text, 'class="main">(.*?)</span>', 13, 7).replace(".", "")
+            price_part_2 = apply_regex(text, 'class="cents">(.*?)</span>', 14, 7).replace("", "")
             price = price_part_1 + "." + price_part_2
 
             url_split = product_url.split("/")
-            if len(url_split) > 3:
-                product_id = url_split[-1]
-                category = url_split[3]
-            else:
-                product_id = -1
+            try:
+                product_id = product_url
+                title = url_split[-1]
+                category = list(VomarProduct.objects.filter(product_id=product_url).values_list('category', flat=True))[0]
+            except Exception as e:
+                product_id = "-1"
                 category = ""
+                title = ""
 
             data = {
-                "title": apply_regex(text, '<title>(.*?)</title>', 7, 8)[:100],
+                "title": title,
                 "product_id": product_id,
-                "description": apply_regex(text, 'Omschrijving</h3>(.*?)</div>', 79, 6),
+                "description": apply_regex(text, '<h5>Beschrijving</h5> <p>(.*?)</p>', 25, 4),
                 "price_now": price,
-                "price_now_unit_size": apply_regex(text, 'product-details__info__subtitle" (.*?)</span>', 49,
-                                                   7).strip(),
+                "price_now_unit_size": apply_regex(text, 'class="unitQuantity"> <span> (.*?)</span>', 29, 7).strip(),
                 "price_unit_info": None,
                 "price_unit_info_unit_size": "",
-                "image_url": apply_regex(text, '"product-details__image" (.*?)?width', 59, 6).replace("&#47;", "/"),
+                "image_url": "http://vomar.nl" + apply_regex(text, 'id="productImage"> <img alt="" src="(.*?)" />', 36, 4).replace("&#47;", "/"),
                 "summary": "",
                 "catalog_id": None,
                 "brand": "",

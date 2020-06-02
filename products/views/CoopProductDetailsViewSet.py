@@ -52,7 +52,7 @@ class CoopProductDetailsViewSet(AbstractProductDetailsViewSet):
             text = r.content.decode("utf-8")
             result = CoopProductDetailsViewSet.map_product_details(text)
         except Exception as e:
-            print("Get json data error:", Exception(e))
+            logging.debug("Get json data error:", Exception(e))
         else:
             return result
 
@@ -60,7 +60,6 @@ class CoopProductDetailsViewSet(AbstractProductDetailsViewSet):
     def map_product_details(text):
         """Map the external api json to a dictionary map that is in line with AH Product Details model"""
         try:
-            print("Description regex", apply_regex(text, 'meta name="description"', 0, 0))
             data = {
                 "title": apply_regex(text, 'altHead head1" itemprop="name">(.*?)</h1>', 31, 5)[:100],
                 "description": "",
@@ -72,7 +71,7 @@ class CoopProductDetailsViewSet(AbstractProductDetailsViewSet):
                 "properties": "",
                 "is_medicine": None
             }
-            print("REGEX result: ", apply_regex(text, 'data-type="details"\ndata-product="(.*?)"', 34, 1))
+
             product_details = clean_product_details(
                 apply_regex(text, 'data-type="details"\ndata-product="(.*?)"', 33, 1))
             product_id = product_details.get('id', -1)
@@ -82,7 +81,6 @@ class CoopProductDetailsViewSet(AbstractProductDetailsViewSet):
             else:
                 category = category[0]
 
-            print("Product details: ", product_details, "Category:", category)
             data.setdefault('product_id', product_id)
             data.setdefault('price_now', product_details.get('price', None))
             data.setdefault('price_now_unit_size', product_details.get('variant', ""))
@@ -92,26 +90,16 @@ class CoopProductDetailsViewSet(AbstractProductDetailsViewSet):
             # print("Data is: ", resources)
         except KeyError as e:
             logging.debug("Key Error:", e, text)
-            raise KeyError(e)
         except IndexError as e:
             logging.debug("Index Error: ", e)
-            print("Index error: ", text)
-            raise IndexError(e, text)
         except Exception as e:
             logging.debug("Exception: ", e, text)
-            raise Exception(e)
         else:
             return data
 
 
 def clean_product_details(text):
     try:
-        print('CLEANED REGEX:', text
-              .replace("&quot;", "\"")
-              .replace("\\", "")
-              .replace("&#47;", "-")
-              .replace("\"{", "{")
-              .replace("}\"", "}"))
         result = json.loads(text
                             .replace("&quot;", "\"")
                             .replace("\\", "")
@@ -119,7 +107,7 @@ def clean_product_details(text):
                             .replace("\"{", "{")
                             .replace("}\"", "}"))
     except Exception as e:
-        print("Exception during json load:", e)
+        logging.debug("Exception during json load:", e)
         return {'id': -1, 'price': None, 'variant': ''}
     else:
         return result

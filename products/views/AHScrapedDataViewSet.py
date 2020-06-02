@@ -4,6 +4,7 @@ import logging
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import permissions
 from products.models import AlbertHeijnProduct
 from products.serializers import AlbertHeijnProductSerializer
 
@@ -38,10 +39,9 @@ class AHProductView(APIView):
                         instance = serializer.save()
                     except Exception as e:
                         logging.debug("Error in serialize.save() for batch product id load.")
-                        raise IOError from e
 
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
-                print("Serializer is invalid with errors:", serializer.errors)
+                logging.info("Serializer is invalid with errors:", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("Permission denied", status=status.HTTP_403_FORBIDDEN)
@@ -52,8 +52,8 @@ class AHProductView(APIView):
             json_value = json_value.replace("https://www.ah.nl", "")
             string_parts = json_value.split('/')
         except IndexError as e:
-            print("Index Error: ", e)
+            logging.debug("Index Error: ", e)
         except Exception as e:
-            print("Exception: ", e)
+            logging.debug("Exception: ", e)
         else:
             return string_parts[3][2:]

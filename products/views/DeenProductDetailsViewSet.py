@@ -46,7 +46,7 @@ class DeenProductDetailsViewSet(AbstractProductDetailsViewSet):
                                                   batch_size=10, min_time_delay=1, max_time_delay=5)
                 return Response("Success", status=status.HTTP_201_CREATED)
             except Exception as e:
-                print("Unexpected Exception: ", Exception(e))
+                logging.debug("Unexpected Exception: ", Exception(e))
                 return Response("Error in execution", status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("Permission denied", status=status.HTTP_400_BAD_REQUEST)
@@ -56,13 +56,12 @@ class DeenProductDetailsViewSet(AbstractProductDetailsViewSet):
         """TODO: Create an env variable for this url"""
         base_url = 'https://www.deen.nl/'
         headers = {'User-agent': 'PostmanRuntime/7.24.0'}
-        print("Searching product id:", product_id)
         try:
             r = requests.get(url=base_url + product_id, headers=headers)
             text = r.content.decode("utf-8")
             result = DeenProductDetailsViewSet.map_product_details(text)
         except Exception as e:
-            raise Exception(e)
+            logging.info("Get json data error:", Exception(e))
         else:
             return result
 
@@ -95,14 +94,10 @@ class DeenProductDetailsViewSet(AbstractProductDetailsViewSet):
             }
         except KeyError as e:
             logging.debug("Key Error:", e, text)
-            raise KeyError(e)
         except IndexError as e:
             logging.debug("Index Error: ", e)
-            print("Index error: ", text)
-            raise IndexError(e, text)
         except Exception as e:
             logging.debug("Exception: ", e, text)
-            raise Exception(e)
         else:
             return data
 
@@ -114,7 +109,7 @@ def clean_product_details(text):
                             .replace("\\", "")
                             .replace("&#47;", "-"))
     except Exception as e:
-        print("Exception during json load:", e)
+        logging.debug("Exception during json load:", e)
         return {'name': '', 'id': '-1', 'price': None, 'brand': '', 'category': ''}
     else:
         return result

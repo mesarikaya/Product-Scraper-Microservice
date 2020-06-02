@@ -17,3 +17,6 @@ from .DeenProductDetailsViewSet import DeenProductDetailsViewSet
 
 from .DirkScrapedDataViewSet import DirkProductView
 from .DirkProductDetailsViewSet import DirkProductDetailsViewSet
+
+from .VomarScrapedDataViewSet import VomarProductView
+from .VomarProductDetailsViewSet import VomarProductDetailsViewSet

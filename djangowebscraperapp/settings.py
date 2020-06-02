@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from datetime import timedelta
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
@@ -24,7 +26,12 @@ SECRET_KEY = 'pn7+%(g4bezc0ylzl8$5hvzqk2trmb2kjn_hcxfiy(w%od%-#f'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['testserver', '127.0.0.1']
+"""if os.getenv('GAE_APPLICATION', None):
+    ALLOWED_HOSTS = ['34.74.172.211']
+else:
+    ALLOWED_HOSTS = ['testserver', '127.0.0.1', 'localhost', '*']
+"""
+ALLOWED_HOSTS = [os.environ.get('LOAD_BALANCER_IP', '*')]
 
 # Application definition
 
@@ -35,10 +42,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'products.apps.ProductsConfig',
     'rest_framework',
-    'django_q',
     'background_task',
+    'products.apps.ProductsConfig'
 ]
 
 MIDDLEWARE = [
@@ -74,7 +80,8 @@ WSGI_APPLICATION = 'djangowebscraperapp.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-DATABASES = {
+
+"""DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'webshop_items',
@@ -83,7 +90,22 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '3306',
     }
+}"""
+
+DATABASES = {
+    'default': {
+        # If you are using Cloud SQL for MySQL rather than PostgreSQL, set
+        # 'ENGINE': 'django.db.backends.mysql' instead of the following.
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'webshop_items',
+        'USER': os.getenv('DATABASE_USER'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
+    }
 }
+
+# '34.74.189.40'
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -125,7 +147,28 @@ STATIC_URL = '/static/'
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
-    'TEST_REQUEST_DEFAULT_FORMAT': 'json'
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated', 'rest_framework.permissions.IsAdminUser',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=14),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
 }
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -139,3 +182,13 @@ os.environ['DJANGO_SETTINGS_MODULE'] = "djangowebscraperapp.settings"
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djangowebscraperapp.settings")
 
 django.setup()
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.8/howto/static-files/
+
+# [START staticurl]
+# STATIC_URL = '/static/'
+STATIC_URL = 'https://storage.googleapis.com/django-web-product-scraper/static/'
+# [END staticurl]
+
+STATIC_ROOT = 'static/'
