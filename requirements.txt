@@ -8,8 +8,12 @@ cachetools==4.1.0
 certifi==2019.11.28
 cffi==1.14.0
 chardet==3.0.4
+chromedriver-binary==84.0.4147.30.0
+colorama==0.4.3
+configparser==5.0.0
 constantly==15.1.0
 coverage==5.0.4
+crayons==0.3.1
 cryptography==2.8
 cssselect==1.1.0
 Django==3.0.5
@@ -44,6 +48,7 @@ parsel==1.5.2
 Protego==0.1.16
 protobuf==3.11.3
 psycopg2==2.8.5
+py-eureka-client==0.7.4
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.20
@@ -72,5 +77,6 @@ Twisted==20.3.0
 urllib3==1.25.8
 w3lib==1.21.0
 wcwidth==0.1.9
+webdriver-manager==3.2.1
 zipp==3.1.0
 zope.interface==5.0.2

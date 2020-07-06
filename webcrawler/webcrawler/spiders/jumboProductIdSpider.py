@@ -28,11 +28,22 @@ class JumboProductIdSpider(scrapy.Spider):
         super()
 
     def parse(self, response):
-        driver = webdriver.Chrome()
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("window-size=1400,2100")
+        chrome_options.add_argument('--disable-gpu')
+        driver = webdriver.Chrome(chrome_options=chrome_options)
         driver.implicitly_wait(30)
         driver.set_page_load_timeout(30)
         driver.set_script_timeout(30)
-        driver.minimize_window()
+
+        """ TODO: Check if it is working"""
+        """driver = webdriver.Chrome()
+        driver.implicitly_wait(30)
+        driver.set_page_load_timeout(30)
+        driver.set_script_timeout(30)
+        driver.minimize_window()"""
         driver.get(response.url)
         scrapy_selector = Selector(text=driver.page_source)
         rows = scrapy_selector.xpath("//a[contains(@class,'jum-product-card__image')]/@href").extract()

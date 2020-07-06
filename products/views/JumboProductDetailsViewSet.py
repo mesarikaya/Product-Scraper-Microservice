@@ -43,10 +43,11 @@ class JumboProductDetailsViewSet(AbstractProductDetailsViewSet):
                                                   view_json=jsonpickle.encode(JumboProductDetailsViewSet),
                                                   serializer_json=jsonpickle.encode(JumboProductDetailsSerializer),
                                                   task_name='get_Jumbo_product_details',
-                                                  batch_size=10, min_time_delay=3, max_time_delay=7)
+                                                  batch_size=batch_size, min_time_delay=3, max_time_delay=5)
+                print("Jumbo Task is created")
                 return Response("Success", status=status.HTTP_201_CREATED)
             except Exception as e:
-                logging.debug("Unexpected Exception: ", Exception(e))
+                print("Unexpected Exception: ", Exception(e))
                 return Response("Error in execution", status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("Permission denied", status=status.HTTP_400_BAD_REQUEST)
@@ -61,7 +62,7 @@ class JumboProductDetailsViewSet(AbstractProductDetailsViewSet):
             text = r.content.decode("utf-8")
             result = JumboProductDetailsViewSet.map_product_details(text)
         except Exception as e:
-            logging.info("Get json data error:", Exception(e))
+            print("Get json data error:", Exception(e))
         else:
             return result
 
@@ -83,7 +84,7 @@ class JumboProductDetailsViewSet(AbstractProductDetailsViewSet):
                 "price_now_unit_size": apply_regex(text, 'jum-pack-size">(.*?)</span>', 15, 7),
                 "price_unit_info": price_unit_info,
                 "price_unit_info_unit_size": price_unit_info_unit_size,
-                "image_url": apply_regex(text, 'resources-jum-hr-src="(.*?)"', 17, 1).replace("&#47;", "/"),
+                "image_url": apply_regex(text, 'data-jum-hr-src="(.*?)"', 17, 1).replace("&#47;", "/"),
                 "summary": apply_regex(text, '<div class="jum-summary-description"> <p>(.*?)</p>', 41, 4),
                 "hq_id": None,
                 "properties": "",
@@ -96,11 +97,11 @@ class JumboProductDetailsViewSet(AbstractProductDetailsViewSet):
             data.setdefault('category', product_details.get('category', ""))
             data.setdefault('product_id', product_details.get('id', "-1"))
         except KeyError as e:
-            logging.debug("Key Error:", e, text)
+            print("Key Error:", e)
         except IndexError as e:
-            logging.debug("Index Error: ", e)
+            print("Index Error: ", e)
         except Exception as e:
-            logging.debug("Exception: ", e, text)
+            print("Exception: ", e)
         else:
             return data
 
@@ -112,7 +113,7 @@ def clean_product_details(text):
                             .replace("\\", "")
                             .replace("&#47;", "-"))
     except Exception as e:
-        logging.info("Exception during json load:", e)
+        print("Exception during json load:", e)
         return {'name': '', 'id': '-1', 'price': None, 'brand': '', 'category': ''}
     else:
         return result

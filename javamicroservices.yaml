@@ -1,0 +1,96 @@
+# Copyright 2015 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License
+
+# This file configures the djangowebscraperapp application . The frontend serves
+# public web traffic.
+
+# The bookshelf frontend replication controller ensures that at least 3
+# instances of the bookshelf app are running on the cluster.
+# For more info about Pods see:
+#   https://cloud.google.com/container-engine/docs/pods/
+# For more info about Deployments:
+#   https://kubernetes.io/docs/user-guide/deployments/
+
+# [START kubernetes_deployment]
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: javamicroservices
+  labels:
+    app: javamicroservices
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: javamicroservices
+    spec:
+      containers:
+      - name: price-intelligence-config-server
+        image: gcr.io/django-web-product-scraper/price-intelligence-config-server
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8888
+      - name: price-intelligence-eureka-server
+        image: gcr.io/django-web-product-scraper/price-intelligence-eureka-server
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8761
+      - name: price-intelligence-gateway
+        image: gcr.io/django-web-product-scraper/price-intelligence-gateway
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9090
+      - name: price-intelligence-job-scheduler
+        image: gcr.io/django-web-product-scraper/price-intelligence-job-scheduler
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8010
+# [END kubernetes_deployment]
+
+---
+
+# [START service]
+apiVersion: v1
+kind: Service
+metadata:
+  name: java-microservices-node-port
+spec:
+  selector:
+    app: javamicroservices
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 9090
+      targetPort: 9090
+      nodePort: 30008
+
+# [END service]
+
+---
+
+# [START service]
+apiVersion: v1
+kind: Service
+metadata:
+  name: java-microservices-eureka-server-node-port
+spec:
+  selector:
+    app: javamicroservices
+  ports:
+    - protocol: TCP
+      port: 8761
+      targetPort: 8761
+# [END service]
+---

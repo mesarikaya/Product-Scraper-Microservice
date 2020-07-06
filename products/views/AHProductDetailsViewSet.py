@@ -1,5 +1,6 @@
 import logging
 import random
+from decimal import Decimal
 
 import jsonpickle
 import requests
@@ -40,10 +41,11 @@ class AHProductDetailsViewSet(AbstractProductDetailsViewSet):
                                                   view_json=jsonpickle.encode(AHProductDetailsViewSet),
                                                   serializer_json=jsonpickle.encode(AlbertHeijnProductDetailsSerializer),
                                                   task_name='get_AH_product_details',
-                                                  batch_size=10, min_time_delay=1, max_time_delay=5)
+                                                  batch_size=batch_size, min_time_delay=1, max_time_delay=5)
+                print("AH Task is created")
                 return Response("Success", status=status.HTTP_201_CREATED)
             except Exception as e:
-                logging.debug("Unexpected exception:", Exception(e))
+                print("Unexpected exception:", Exception(e))
                 return Response("Error in execution", status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("Permission denied", status=status.HTTP_400_BAD_REQUEST)
@@ -59,7 +61,7 @@ class AHProductDetailsViewSet(AbstractProductDetailsViewSet):
             data = r.json()
             result = AHProductDetailsViewSet.map_product_details(data)
         except Exception as e:
-            logging.debug("Json serialization exception:", Exception(e))
+            print("Json serialization exception:", Exception(e))
         else:
             return result
 
@@ -78,7 +80,7 @@ class AHProductDetailsViewSet(AbstractProductDetailsViewSet):
                 data.setdefault('price_now', None)
                 data.setdefault('price_now_unit_size', "")
             else:
-                data.setdefault('price_now', products[0].get('price', {}).get('now'))
+                data.setdefault('price_now', Decimal(products[0].get('price', {}).get('now')).quantize(Decimal('1e-4')))
                 data.setdefault('price_now_unit_size', products[0].get('price', {}).get('unitSize'))
             image = json_value.get('card', {}).get('products', [])[0].get('images', {})
             if not image:
@@ -103,10 +105,10 @@ class AHProductDetailsViewSet(AbstractProductDetailsViewSet):
                             json_value.get('card', {}).get('products', [])[0].get('price', {})
                             .get('unitInfo', {}).get('description', ""))
         except KeyError as e:
-            logging.debug("Key Error:", e, json_value)
+            print("Key Error:", e)
         except IndexError as e:
-            logging.debug("Index Error: ", e)
+            print("Index Error: ", e)
         except Exception as e:
-            logging.debug("Exception: ", e, json_value)
+            print("Exception: ", e)
         else:
             return data

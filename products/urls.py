@@ -18,7 +18,7 @@ router.register(r'groups', GroupViewSet)
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('', include(router.urls)),
-    path('token/obtain/', jwt_views.TokenObtainPairView.as_view(), name='token_create'),  # override sjwt stock token
+    path('token/obtain/', jwt_views.TokenObtainPairView.as_view(), name='token_create'),  # override jwt stock token
     path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('save/ah/json', AHScrapedDataViewSet.AHProductView.as_view(), name="ah_jsonLoad"),
     path('save/jumbo/json', JumboScrapedDataViewSet.JumboProductView.as_view(), name="jumbo_jsonLoad"),

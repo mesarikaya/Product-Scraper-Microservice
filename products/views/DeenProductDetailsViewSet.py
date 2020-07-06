@@ -43,10 +43,11 @@ class DeenProductDetailsViewSet(AbstractProductDetailsViewSet):
                                                   view_json=jsonpickle.encode(DeenProductDetailsViewSet),
                                                   serializer_json=jsonpickle.encode(DeenProductDetailsSerializer),
                                                   task_name='get_Deen_product_details',
-                                                  batch_size=10, min_time_delay=1, max_time_delay=5)
+                                                  batch_size=batch_size, min_time_delay=1, max_time_delay=5)
+                print("Deen Task is created")
                 return Response("Success", status=status.HTTP_201_CREATED)
             except Exception as e:
-                logging.debug("Unexpected Exception: ", Exception(e))
+                print("Unexpected Exception: ", Exception(e))
                 return Response("Error in execution", status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("Permission denied", status=status.HTTP_400_BAD_REQUEST)
@@ -61,7 +62,7 @@ class DeenProductDetailsViewSet(AbstractProductDetailsViewSet):
             text = r.content.decode("utf-8")
             result = DeenProductDetailsViewSet.map_product_details(text)
         except Exception as e:
-            logging.info("Get json data error:", Exception(e))
+            print("Get json data error:", Exception(e))
         else:
             return result
 
@@ -73,12 +74,18 @@ class DeenProductDetailsViewSet(AbstractProductDetailsViewSet):
         except Exception as e:
             category = ""
 
+        product_id = apply_regex(text, '<meta itemprop="sku" content="(.*?)"', 30, 1);
+        if product_id=="":
+            product_id = -1
+        else:
+            product_id = int(product_id)
+
         try:
             data = {
                 "title": apply_regex(text, '<h1 itemprop="name">(.*?)</h1>', 20, 5).replace("&#39;", "é")[:200],
-                "product_id": apply_regex(text, '<meta itemprop="sku" content="(.*?)"', 30, 1),
+                "product_id": product_id,
                 "description": apply_regex(text, 'description">(.*?)<', 14, 2),
-                "price_now": apply_regex(text, 'price: (.*?),', 8, 2).replace(",", "."),
+                "price_now": Decimal(apply_regex(text, 'price: (.*?),', 8, 2).replace(",", ".")),
                 "price_now_unit_size": apply_regex(text, 'Gewicht</h3>(.*?)<', 12, 1).strip(),
                 "price_unit_info": None,
                 "price_unit_info_unit_size": "",
@@ -93,11 +100,11 @@ class DeenProductDetailsViewSet(AbstractProductDetailsViewSet):
                 "is_medicine": None
             }
         except KeyError as e:
-            logging.debug("Key Error:", e, text)
+            print("Key Error:", e)
         except IndexError as e:
-            logging.debug("Index Error: ", e)
+            print("Index Error: ", e)
         except Exception as e:
-            logging.debug("Exception: ", e, text)
+            print("Exception: ", e)
         else:
             return data
 
@@ -109,7 +116,7 @@ def clean_product_details(text):
                             .replace("\\", "")
                             .replace("&#47;", "-"))
     except Exception as e:
-        logging.debug("Exception during json load:", e)
+        print("Exception during json load:", e)
         return {'name': '', 'id': '-1', 'price': None, 'brand': '', 'category': ''}
     else:
         return result

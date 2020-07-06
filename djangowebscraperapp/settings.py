@@ -31,7 +31,7 @@ DEBUG = True
 else:
     ALLOWED_HOSTS = ['testserver', '127.0.0.1', 'localhost', '*']
 """
-ALLOWED_HOSTS = [os.environ.get('LOAD_BALANCER_IP', '*')]
+ALLOWED_HOSTS = [os.environ.get('CLUSTER_IP', '*')]
 
 # Application definition
 
@@ -157,7 +157,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=14),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': False,
@@ -192,3 +192,19 @@ STATIC_URL = 'https://storage.googleapis.com/django-web-product-scraper/static/'
 # [END staticurl]
 
 STATIC_ROOT = 'static/'
+
+# import py_eureka_client.eureka_client as eureka_client
+#
+# # The flowing code will register your server to eureka server and also start to send heartbeat every 30 seconds
+# eureka_client.init_registry_client(eureka_server="http://169.254.130.117, http://discoveryserver:secretpassword@localhost:8080",
+#                                    app_name="wepshopproductscraperapp",
+#                                    instance_port=8080)
+
+import py_eureka_client.eureka_client as eureka_client
+
+gateway_server_port = 8761
+# The flowing code will register your server to eureka server and also start to send heartbeat every 30 seconds
+eureka_client.init_registry_client(
+    eureka_server="http://discoveryserver:secretpassword@10.27.241.215:8761/eureka, http://discoveryserver:secretpassword@10.27.241.215:8761/eureka",
+    app_name="django-web-product-scraper-microservice",
+    instance_port=gateway_server_port)

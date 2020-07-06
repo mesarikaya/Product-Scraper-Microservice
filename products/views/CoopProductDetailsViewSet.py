@@ -1,5 +1,7 @@
 import json
 import logging
+from decimal import Decimal
+
 import jsonpickle
 import requests
 
@@ -36,10 +38,11 @@ class CoopProductDetailsViewSet(AbstractProductDetailsViewSet):
                                                   view_json=jsonpickle.encode(CoopProductDetailsViewSet),
                                                   serializer_json=jsonpickle.encode(CoopProductDetailsSerializer),
                                                   task_name='get_Coop_product_details',
-                                                  batch_size=10, min_time_delay=3, max_time_delay=7)
+                                                  batch_size=batch_size, min_time_delay=1, max_time_delay=5)
+                print("Coop Task is created")
                 return Response("Success", status=status.HTTP_201_CREATED)
             except Exception as e:
-                logging.debug(Exception(e))
+                print(Exception(e))
                 return Response("Error in execution", status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("Permission denied", status=status.HTTP_400_BAD_REQUEST)
@@ -52,7 +55,7 @@ class CoopProductDetailsViewSet(AbstractProductDetailsViewSet):
             text = r.content.decode("utf-8")
             result = CoopProductDetailsViewSet.map_product_details(text)
         except Exception as e:
-            logging.debug("Get json data error:", Exception(e))
+            print("Get json data error:", Exception(e))
         else:
             return result
 
@@ -81,19 +84,21 @@ class CoopProductDetailsViewSet(AbstractProductDetailsViewSet):
             else:
                 category = category[0]
 
-            data.setdefault('product_id', product_id)
-            data.setdefault('price_now', product_details.get('price', None))
+            price_now = product_details.get('price', None)
+            if price_now is not None:
+                price_now = Decimal(price_now)
+
+            data.setdefault('product_id', int(product_id))
+            data.setdefault('price_now', price_now)
             data.setdefault('price_now_unit_size', product_details.get('variant', ""))
             data.setdefault('brand', product_details.get('brand', ""))
             data.setdefault('category', category)
-
-            # print("Data is: ", resources)
         except KeyError as e:
-            logging.debug("Key Error:", e, text)
+            print("Key Error:", e)
         except IndexError as e:
-            logging.debug("Index Error: ", e)
+            print("Index Error: ", e)
         except Exception as e:
-            logging.debug("Exception: ", e, text)
+            print("Exception: ", e)
         else:
             return data
 
@@ -107,7 +112,7 @@ def clean_product_details(text):
                             .replace("\"{", "{")
                             .replace("}\"", "}"))
     except Exception as e:
-        logging.debug("Exception during json load:", e)
+        print("Exception during json load:", e)
         return {'id': -1, 'price': None, 'variant': ''}
     else:
         return result

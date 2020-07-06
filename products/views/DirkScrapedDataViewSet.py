@@ -16,7 +16,6 @@ class DirkProductView(APIView):
         DirkProduct.objects.all()
 
     def post(self, request, format=None):
-        logging.debug("Request body has the following resources: ", request.data, request.data['is_allowed'])
         if request.data['is_allowed']:
             with open('resources/data/dirk_product_ids.json', errors='ignore') as data_file:
                 data = data_file.read()

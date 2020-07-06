@@ -30,7 +30,10 @@ metadata:
   labels:
     app: djangowebproductscraper
 spec:
-  replicas: 3
+  selector:
+    matchLabels:
+      app: djangowebproductscraper
+  replicas: 1
   template:
     metadata:
       labels:
@@ -58,12 +61,11 @@ spec:
                   key: password
             # [END cloudsql_secrets]
             # [START ALLOWED HOSTS]
-            - name: LOAD_BALANCER_IP
-              value: 34.75.174.57
+            - name: CLUSTER_IP
+              value: 10.27.242.19
             # [END ALLOWED HOSTS]
         ports:
         - containerPort: 8080
-
 
       # [START proxy_container]
       - image: gcr.io/cloudsql-docker/gce-proxy:1.16
@@ -79,7 +81,8 @@ spec:
             mountPath: /etc/ssl/certs
           - name: cloudsql
             mountPath: /cloudsql
-      # [END proxy_container] 
+      # [END proxy_container]
+
       # [START volumes]
       volumes:
         - name: cloudsql-oauth-credentials
@@ -90,7 +93,10 @@ spec:
             path: /etc/ssl/certs
         - name: cloudsql
           emptyDir:
-      # [END volumes]        
+      # [END volumes]
+
+
+
 # [END kubernetes_deployment]
 
 ---
@@ -103,17 +109,31 @@ spec:
 #   https://cloud.google.com/container-engine/docs/services/
 # For more information about external HTTP load balancing see:
 #   https://cloud.google.com/container-engine/docs/load-balancer
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: djangowebproductscraper
+#  labels:
+#    app: djangowebproductscraper
+#spec:
+#  type: LoadBalancer
+#  ports:
+#  - port: 80
+#    targetPort: 8080
+#  selector:
+#    app: djangowebproductscraper
+# [END service]
 apiVersion: v1
 kind: Service
 metadata:
-  name: djangowebproductscraper
   labels:
     app: djangowebproductscraper
+  name: djangowebproductscraper
 spec:
-  type: LoadBalancer
-  ports:
-  - port: 80
-    targetPort: 8080
   selector:
     app: djangowebproductscraper
-# [END service]
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8080
+    targetPort: 8080

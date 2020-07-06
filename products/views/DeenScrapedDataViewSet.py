@@ -35,13 +35,13 @@ class DeenProductView(APIView):
                 serializer = DeenProductSerializer(data=data_to_serialize, many=True)
                 if serializer.is_valid():
                     try:
-                        logging.debug("Saving with serializer")
+                        print("Saving with serializer")
                         instance = serializer.save()
                     except Exception as e:
-                        logging.debug("Error in serialize.save() for batch product id load.")
+                        print("Error in serialize.save() for batch product id load.")
 
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
-                logging.info("Serializer is invalid with errors:", serializer.errors)
+                print("Serializer is invalid with errors:", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("Permission denied", status=status.HTTP_403_FORBIDDEN)

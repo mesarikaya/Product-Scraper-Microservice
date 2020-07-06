@@ -1,5 +1,7 @@
 import json
 import logging
+from decimal import Decimal
+
 import jsonpickle
 import requests
 
@@ -30,19 +32,18 @@ class VomarProductDetailsViewSet(AbstractProductDetailsViewSet):
         batch_size = request.data['batch_size']
         is_allowed = request.data['is_allowed']
 
-        print("Inside the post function")
         if is_allowed and batch_size >= 0 and batch_size:
             try:
-                print("Inside the post function")
                 create_batch_product_details_task(product_class=VomarProduct,
                                                   column_name='product_id',
                                                   view_json=jsonpickle.encode(VomarProductDetailsViewSet),
                                                   serializer_json=jsonpickle.encode(VomarProductDetailsSerializer),
                                                   task_name='get_Vomar_product_details',
-                                                  batch_size=10, min_time_delay=3, max_time_delay=7)
+                                                  batch_size=batch_size, min_time_delay=1, max_time_delay=5)
+                print("Vomar Task is created")
                 return Response("Success", status=status.HTTP_201_CREATED)
             except Exception as e:
-                logging.debug(Exception(e))
+                print(Exception(e))
                 return Response("Error in execution", status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("Permission denied", status=status.HTTP_400_BAD_REQUEST)
@@ -54,8 +55,9 @@ class VomarProductDetailsViewSet(AbstractProductDetailsViewSet):
             r = requests.get(url=product_url, headers=headers)
             text = r.content.decode("utf-8")
             result = VomarProductDetailsViewSet.map_product_details(text, product_url)
+            logging.info("Saving data:", result)
         except Exception as e:
-            logging.info("Get json data error:", Exception(e))
+            print("Get json data error:", Exception(e))
         else:
             return result
 
@@ -82,7 +84,7 @@ class VomarProductDetailsViewSet(AbstractProductDetailsViewSet):
                 "title": title,
                 "product_id": product_id,
                 "description": apply_regex(text, '<h5>Beschrijving</h5> <p>(.*?)</p>', 25, 4),
-                "price_now": price,
+                "price_now": Decimal(price),
                 "price_now_unit_size": apply_regex(text, 'class="unitQuantity"> <span> (.*?)</span>', 29, 7).strip(),
                 "price_unit_info": None,
                 "price_unit_info_unit_size": "",
@@ -97,11 +99,11 @@ class VomarProductDetailsViewSet(AbstractProductDetailsViewSet):
                 "is_medicine": None
             }
         except KeyError as e:
-            logging.debug("Key Error:", e, text)
+            print("Key Error:", e)
         except IndexError as e:
-            logging.debug("Index Error: ", e)
+            print("Index Error: ", e)
         except Exception as e:
-            logging.debug("Exception: ", e, text)
+            print("Exception: ", e)
         else:
             return data
 
@@ -115,7 +117,7 @@ def clean_product_details(text):
                             .replace("\"{", "{")
                             .replace("}\"", "}"))
     except Exception as e:
-        logging.info("Exception during json load:", e)
+        print("Exception during json load:", e)
         return {'id': -1, 'price': None, 'variant': ''}
     else:
         return result
