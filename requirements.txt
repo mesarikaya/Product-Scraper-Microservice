@@ -41,7 +41,7 @@ jinxed==1.0.0
 jproperties==2.1.0
 json-utils==0.2
 jsonpickle==1.4.1
-lxml==4.5.0
+lxml==4.6.3
 Markdown==3.2.1
 mysqlclient==1.4.6
 parsel==1.5.2
