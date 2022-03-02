@@ -63,7 +63,7 @@ redis==3.4.1
 requests==2.23.0
 rsa==4.0
 scraperapi-sdk==0.2.2
-Scrapy==2.0.1
+Scrapy==2.6.0
 scrapy-djangoitem==1.1.1
 scrapy-fake-useragent==1.2.0
 scrapy-splash==0.7.2
